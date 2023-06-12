@@ -1,6 +1,6 @@
-2.install=Installation and deployment
-4.configuration-management=Configuration parameter
-6.data-routing=Data routing
-7.high-availability=High availability mechanism
-9.o-m-guide=Operation and maintenance
-1.troubleshooting=Troubleshooting
+200.install=Installation and deployment
+400.configuration-management=Configuration parameter
+600.data-routing=Data routing
+700.high-availability=High availability mechanism
+900.o-m-guide=Operation and maintenance
+100.troubleshooting=Troubleshooting
