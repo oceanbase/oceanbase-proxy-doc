@@ -3,4 +3,6 @@
 600.data-routing=数据路由
 700.high-availability=高可用机制
 900.o-m-guide=运维
-100.troubleshooting=问题排查
+  100.troubleshooting=问题排查
+  400.routing-diagnosis=路由诊断
+    300.diagnosis-point-troubleshooting=诊断点排查
