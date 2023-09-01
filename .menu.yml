@@ -1,5 +1,7 @@
 200.install=安装部署
 400.configuration-management=配置参数
+  200.dynamically-effective=动态生效配置项
+  300.restart-takes-effect=重启生效配置项
 500.connection-management=连接管理
 600.data-routing=数据路由
 700.high-availability=高可用机制
