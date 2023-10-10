@@ -1,5 +1,6 @@
 200.install=Installation and deployment
 400.configuration-management=Configuration parameter
+500.connection-management=Connection management
 600.data-routing=Data routing
 700.high-availability=High availability mechanism
 900.o-m-guide=Operation and maintenance
