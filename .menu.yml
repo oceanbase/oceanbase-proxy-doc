@@ -2,6 +2,7 @@
 400.configuration-management=配置参数
 500.connection-management=连接管理
 600.data-routing=数据路由
+  400.intra-tenant-routing=租户内路由
 700.high-availability=高可用机制
 900.o-m-guide=运维
   100.troubleshooting=问题排查
