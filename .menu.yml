@@ -6,9 +6,9 @@
 600.data-routing=数据路由
   400.intra-tenant-routing=租户内路由
   700.expression-routing=分区表达式路由
+650.log=日志
 700.high-availability=高可用机制
 900.o-m-guide=运维
-  100.troubleshooting=问题排查
   400.routing-diagnosis=路由诊断
     300.diagnosis-point-troubleshooting=诊断点排查
 1000.release-notes=版本发布记录
