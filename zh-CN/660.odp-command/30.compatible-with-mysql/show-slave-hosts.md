@@ -1,0 +1,16 @@
+# SHOW SLAVE HOSTS
+
+<main id="notice" type='explain'>
+  <h4>说明</h4>
+  <p>仅支持该关键字语法，功能暂不生效，执行将返回空结果集。</p>
+</main>
+
+## 描述
+
+该语句用于列出已经注册的数据源副本。
+
+## 语法
+
+```sql
+SHOW SLAVE HOSTS
+```

@@ -1,0 +1,16 @@
+# BINLOG
+
+<main id="notice" type='explain'>
+  <h4>说明</h4>
+  <p>仅支持该关键字语法，功能暂不生效，执行将返回空结果集。</p>
+</main>
+
+## 描述
+
+BINLOG 是一种内部使用的语句。'str' 是通过 64 位编码的字符串，其可以被服务器解析。
+
+## 语法
+
+```sql
+BINLOG 'str'
+```
