@@ -23,7 +23,7 @@ SHOW {
    | PROXYSESSION STAT id [like 'xx']
    | PROXYSESSION VARIABLES [all] id [like 'xx']
    | PROXYSM [sm_id]
-   | PROXYSTAT [refresh] [like 'xx']
+   | PROXYSTAT [refresh] [like 'name']
    | PROXYTRACE [session_id [attempt_id]]
    | PROXYVIP [vid vip:vport]
    | WARNLOG [[[log_id], thread_id], time]
@@ -34,7 +34,6 @@ SHOW {
 ```
 <!-- 还剩 SQL Audit 没有看懂啥意思 -->
 
-alter proxyconfig set key=value
 ## 参数解释
 
 | 参数   | 描述    |
@@ -44,9 +43,12 @@ alter proxyconfig set key=value
 | PROXYINFO IDC | 以富文本形式展示 ODP IDC 匹配信息。 |
 | PROXYCLUSTER [IDC] [like 'cluster_name'] | 展示集群的 rs_list 详细信息，支持 like 模糊匹配（支持 `%` 和 `_`）。配置 `IDC` 后展示集群的 idc_list 详细信息。  |
 | PROXYCONFIG [diff] [like 'config_name'] | 展示 ODP 的配置项，配置 `diff` 后仅展示和默认参数不一样的配置项。支持 like 模糊匹配（支持 `%` 和 `_`）。 |
-| PROXYCONGESTION [all] [cluster_name] |  |
-| PROXYMEMORY [objpool] |  |
-| PROXYNET CONNECTION [thread_id [LIMIT xx]] |  展示 ODP 当前各个连接的属性状态。可通过配置 `thread_id` 展示指定线程上的各连接状态，不指定时默认展示 ODP 全部连接的属性状态。指定 `thread id` 时，支持 `LIMIT [offset,] rows` 和 `LIMIT rows OFFSET offset`，格式与 MySQL 完全兼容，并且当 rows 设置为 `-1` 时，表示展示全部行。  |
+<!-- 应该也支持 show proxyconfig diff user like 命令，是否要在 [diff] 后加 [user] -->
+| PROXYCONGESTION [all] [cluster_name] | 展示 ODP 代理的所有集群的信息。根据配置的参数不同有如下几种情况：<ul><li>默认情况下展示所有集群的黑名单信息，黑名单指 `dead_congested`, `alive_congested`, `is_zone_upgrading`, `is_zone_merging`, `is_server_upgrading` 任意一个状态为`true`。</li><li>配置 <code>all</code> 参数时展示所有集群的 OBServe 节点信息，包括黑名单和非黑名单中的 OBServer 节点信息。</li><li>仅配置 <code>clustername</code> 参数时展示指定集群的黑名单信息。</li><li>配置全部参数时，展示指定集群的 OBServer 节点信息。</li></ul><main id="notice" type='explain'><h4>说明</h4><p>ODP 为 V1.1.2 或之前版本时，<code>clustername</code> 不需要单引号或者双引号引起来；ODP V1.1.2 及之后版本，<code>clustername</code> 必须要用单引号或者双引号引起来。</p></main> |
+<!-- 查看现在的黑名单判断标准 -->
+| PROXYMEMORY [objpool] |   展示 ODP 的内存使用情况，包括各个模块分配的内存、正在使用的内存以及模块所属类型等等，用来帮助分析 ODP 性能。 |
+| PROXYNET CONNECTION [thread_id [LIMIT xx]] |  展示 ODP 当前各个连接的属性状态。可通过配置 `thread_id` 展示指定线程上的各连接状态，不指定时默认展示 ODP 全部连接的属性状态。指定 `thread id` 时，支持 `LIMIT [offset,] rows` 和 `LIMIT rows OFFSET offset`，格式与 MySQL 完全兼容，并且当 rows 设置为 `-1` 时，表示展示全部行。<main id="notice" type='explain'><h4>说明</h4><p>详细的使用介绍可参见 <a href='../../500.connection-management/450.net-session.md'>网络连接</a>。</p></main>  |
+<!-- 文档中有篇介绍的，该命令是查看网络连接的 -->
 | PROXYNET THREAD | 展示 ODP 内部各个工作线程属性状态。ODP 工作线程个数由 [work_thread_num](../../400.configuration-management/200.global-configuration-items/2570.work_thread_num.md) 控制。 |
 | PROXYROUTE [like 'cluster [tenant [db [table]]]'] | 展示 ODP 内部 table entry 状态，默认展示所有 table entry 状态，支持 like 模糊匹配（支持 `%` 和 `_`）。ODP 内部 SQL 路由地址信息以 table entry 为单位，每个 table entry 由集群名、租户名、数据库名和表名组成，不指定表名的 SQL，内部使用 `__all_dummy` 表标记。 |
 | PROXYSESSION | 展示当前 ODP 上租户连接的全部 Client Session 的内部状态，与 `SHOW PROCESSLIST` 命令不同的是，`SHOW PROXYSESSION` 可以展示所有租户下 Client Session 的状态，并包括每个租户的所在的集群。  |
@@ -57,7 +59,242 @@ alter proxyconfig set key=value
 | PROXYSESSION STAT id [like 'xx'] | 展示 ODP 指定 Client Session 的内部统计项（包括：SQL 请求响应数量、SQL 请求响应大小等）。<ul><li><code>id</code> 既可以是 <code>cs_id</code>，也可以是 <code>connection_id</code>，显示结果相同。</br><code>cs_id</code> 为 ODP 内部标记的每个 Client 的 ID 号，<code>connection_id</code> 为整个 OceanBase 数据库标记的每个 Client 的 ID 号。MySQL 模式下的 <code>connection_id</code> 通过 <code>SELECT CONNECTION_ID();</code> 语句获取，Oracle 模式下的 <code>connection_id</code> 通过 <code>SHOW FULL PROCESSLIST;</code> 语句获取。</li><li>like 模糊匹配，支持 <code>%</code> 和 <code>_</code>。</li></ul>  |
 | PROXYSESSION VARIABLES [all] id [like 'xx'] | 展示指定 Client Session 的 Session 变量。<ul><li>不配置 <code>all</code> 参数时，展示指定 Client Session 的本地 Session 变量（包括：修改过的系统变量和用户变量）。</li><li>配置 <code>all</code> 参数时，展示指定 Client Session 的全部 Session 变量（包括：所有系统变量和用户变量）。</li><li><code>id</code> 既可以是 <code>cs_id</code>，也可以是 <code>connection_id</code>，显示结果相同。</br><code>cs_id</code> 为 ODP 内部标记的每个 Client 的 ID 号，<code>connection_id</code> 为整个 OceanBase 数据库标记的每个 Client 的 ID 号。MySQL 模式下的 <code>connection_id</code> 通过 <code>SELECT CONNECTION_ID();</code> 语句获取，Oracle 模式下的 <code>connection_id</code> 通过 <code>SHOW FULL PROCESSLIST;</code> 语句获取。</li><li>like 模糊匹配，支持 <code>%</code> 和 <code>_</code>。</li></ul> |
 | PROXYSM [sm_id] | 以富文本形式展示 ODP 各个 StateMachine 内部状态，支持展示指定 StateMachine 的内部状态。 |
-| PROXYSTAT [refresh] [like 'xx'] |  |
+| PROXYSTAT [refresh] [like 'xx'] | 展示 ODP 内部的统计项。<ul><li>不配置 <code>refresh</code> 参数时，默认展示 ODP 内部上一次汇总的统计项。</li><li>配置 <code>refresh</code> 参数时，时强制执行一次本地统计项汇总更新后，再进行展示。</li><li>like 模糊匹配，支持 <code>%</code> 和 <code>_</code>。</li><li>输出中统计项 <code>persist_type</code> 值为 <code>PERSISTENT</code> 表示该统计项会持久化更新到远程数据库的 <code>ob_all_proxy_stat</code> 表中。</li><li>本地统计项更新时间由 <a href='../../400.configuration-management/200.global-configuration-items/2470.stat-table-sync-interval.md'>stat_table_sync_interval</a> 控制，默认值为 60s 更新一次。</li></ul> |
 | PROXYTRACE [session_id [attempt_id]] | 展示指定连接上任意一次尝试路径中的状态，不配置任何参数时默认展示当前连接所有尝试路径，不配置 `attempt_id` 时默认展示指定连接上的所有尝试路径。ODP 内部对每个事务的执行都会执行若干次路由尝试，每次路由都会经历选择 OBServer 节点、黑名单检测、同步状态、发送 SQL 四步。使用该命令查看尝试路径状态前需开启配置项 [enable_trace_stats](../../400.configuration-management/200.global-configuration-items/920.enable-trace-stats.md)，可通过 `alter proxyconfig set enable_trace_stats=true` 命令开启。 |
-| PROXYVIP [vid vip:vport] |  |
-| WARNLOG [[[log_id], thread_id], time] |  |
+| PROXYVIP [vid vip:vport] | 展示指定 ODP 的内部 vip2tenant 映射关系，默认不带参数展示所有的映射关系，可以查询指定 `vid vip:vport` 组合的映射关系， 不支持模糊查询。<main id="notice" type='explain'><h4>说明</h4><p>ODP 为 V1.1.0 或 V1.1.1 时，<code>vid vip:vport</code> 不需要单引号或者双引号引起来；ODP V1.1.2 及之后版本，<code>vid vip:vport</code> 必须要用单引号或者双引号引起来。</p></main> |
+| WARNLOG [[[log_id], thread_id], time] | 展示最近的 `WARN` 和 `ERROR` 级别告警日志。 |
+
+## 使用示例
+
+### 查看 ODP 自身状态
+
+* 查看 ODP 版本
+  
+  ```shell
+  show proxyinfo binary\G
+  ```
+
+  输出如下：
+
+  ```shell
+  *************************** 1. row ***************************
+  name: binary info
+  info: ObProxy-OceanBase 4.0.0-20221103165243.el7
+  version:RELEASE_7U
+  MD5:
+  REVISION:20221103165243-7c7e5821009b2d3924d1bc7a8165edf7384f6ed3
+  BUILD_TIME:Nov  3 2022 16:57:16
+  ```
+
+* 查看 ODP 运行/升级相关信息
+  
+  ```shell
+  show proxyinfo upgrade\G
+  ```
+
+  输出如下：
+
+  ```shell
+  *************************** 1. row ***************************
+  name: hot upgrade info
+  info: {is_inited:true, proxy_port:13205, proxy_ip:"10.10.10.1", 
+  is_self_md5_available:false, proxy_self_md5:"", upgrade_failures:0, check_available_failures:0, is_timeout_rollback:false, timeout_rollback_timeout_at:0,  wait_cr_finish_timeout_at:0, is_self_binary:false, 
+  last_new_binary_name:"", last_new_binary_md5:"", cmd:"", hu_cont:NULL, 
+  mysql_proxy:{this:0x1107a750, is_inited:true, stop:false, is_raw_execute:false, timeout_ms:5000, 
+  client_pool:{this:0x7fd04d55d280, is_inited:true, stop:false, mc_count:1, cluster_resource:0x7fd04d5a5f80}, 
+  raw_mysql_client:{is_inited:true, info:{has_passwd_scrambled:false, user_name:"admin", database_name:"oceanbase", request_sql:""}, svr_addr_[0]="0.0.0.0", svr_addr_[1]="0.0.0.0", svr_addr_[2]="0.0.0.0"}}, 
+  info:{is_inherited:false, upgrade_version:0, need_conn_accept:true, user_rejected:0, fd:23, sub_pid:-1, graceful_exit_end_time:0, graceful_exit_start_time:0, active_client_vc_count:-1, local_addr:"10.10.10.1:13205", rc_status:"", 
+  hu_cmd:"", state:"HU_STATE_WAIT_HU_CMD", hu_status:"", is_parent:true, sub_status:"", last_parent_status:"", last_sub_status:"", 
+  upgrade_version_buf:"", argc:1, argv[0]="./bin/obproxy", inherited_argv[0]="./bin/obproxy", inherited_argv[1]="(null)", inherited_argv[2]="(null)", inherited_argv[3]="(null)"}}
+  ```
+
+* 查看 ODP IDC 匹配信息
+  
+  ```shell
+  show proxyinfo idc;
+  ```
+
+  输出如下：
+
+  ```shell
+  +-----------------+--------------+----------------+--------------+--------------+-------------+--------------+
+  | global_idc_name | cluster_name | match_type     | regions_name | same_idc     | same_region | other_region |
+  +-----------------+--------------+----------------+--------------+--------------+-------------+--------------+
+  | idc1            | MetaDataBase | MATCHED_BY_IDC | ["HZ"]       | ["z1", "z2"] | []          | ["z3", "z4"] |
+  +-----------------+--------------+----------------+--------------+--------------+-------------+--------------+
+  ```
+
+### 查看 ODP 的连接
+
+此处仅给出一个查看 ODP 连接的示例，详细的介绍可参见 [客户端连接](../../500.connection-management/300.client-session.md)。
+
+查询 cs_id 为 `2` 的客户端连接中属性名称包含 `id` 的信息。
+
+```shell
+show proxysession attribute 2 like '%id%';
+```
+
+输出如下：
+
+```shell
++------------------------+--------------------+----------------+
+| attribute_name         | value              | info           |
++------------------------+--------------------+----------------+
+| proxy_sessid           | 756006681247547396 | cs common      |
+| cs_id                  | 2                  | cs common      |
+| tid                    | 2230520            | cs common      |
+| pid                    | 2230520            | cs common      |
+| last_insert_id_version | 0                  | cs var version |
+| server_sessid          | 2147549201         | last used ss   |
+| ss_id                  | 4                  | last used ss   |
+| last_insert_id_version | 0                  | last used ss   |
++------------------------+--------------------+----------------+
+```
+
+### 查看 ODP 的内存使用
+
+```shell
+show proxymemory;
+```
+
+输出如下：
+
+```shell
++-------------------------------+-----------+----------+----------+-------+----------+
+| mod_name                      | mod_type  | hold     | used     | count | avg_used |
++-------------------------------+-----------+----------+----------+-------+----------+
+| OB_ALLOC_CHUNK                | allocator | 29424512 | 29423792 |    15 |  1961586 |
+| OB_ALLOC_BLOCK                | allocator | 24137696 | 23371079 |   223 |   104803 |
+| OB_ALLOC_OBJECT               | allocator | 23260647 | 23253895 |   211 |   110208 |
+| OB_MEMORY_STAT                | user      |    54336 |    54336 |     1 |    54336 |
+| OB_TSI_FACTORY                | user      |  8757888 |  8757888 |    16 |   547368 |
+| OB_PAGE_ARENA                 | user      |    32640 |    32640 |     4 |     8160 |
+| OB_FIXED_QUEUE                | user      |    13008 |    13008 |     2 |     6504 |
+| TEST                          | user      |    55400 |    55400 |     1 |    55400 |
+| OB_HASH_BUCKET_CONF_CONTAINER | user      |    24720 |    24720 |     1 |    24720 |
+| OB_HASH_BUCKET_TASK_MAP       | user      |    37376 |    37376 |     1 |    37376 |
+| OB_HASH_NODE_CONF_CONTAINER   | user      |    15792 |    15792 |     2 |     7896 |
+| OB_CONCURRENCY_OBJ_POOL       | user      | 14183104 | 14183104 |   175 |    81046 |
+| OB_CORE_LOCAL_STORAGE         | user      |     2048 |     2048 |     1 |     2048 |
+| OB_PROXY_DEFAULT_SYS_VARIABLE | user      |    32768 |    32768 |     2 |    16384 |
+| OB_PROXY_SQL_PARSE            | user      |    24576 |    24576 |     3 |     8192 |
+| OB_PROXY_COMMON_DQ            | user      |     8200 |     8200 |     1 |     8200 |
+| OB_LARGE_IO_BUFFER            | user      |    12039 |    12039 |     1 |    12039 |
++-------------------------------+-----------+----------+----------+-------+----------+
+```
+
+### 查看集群信息
+
+查看指定集群的 OBServer 节点信息：
+
+```shell
+show proxycongestion all "obcluster";
+```
+
+示例中以集群名为 `obcluster` 为例，您需根据实际集群名称进行替换，输出如下：
+
+```shell
++-----------------+-----------+------------+--------------------+--------------+-----------------+----------------------+----------------+---------------------+---------------------+--------------------+---------------------+---------------------+----------------------+----------------------+-----------+
+| cluster_name    | zone_name | zone_state | server_ip          | server_state | alive_congested | last_alive_congested | dead_congested | last_dead_congested | stat_alive_failures | stat_conn_failures | conn_last_fail_time | conn_failure_events | alive_last_fail_time | alive_failure_events | ref_count |
++-----------------+-----------+------------+--------------------+--------------+-----------------+----------------------+----------------+---------------------+---------------------+--------------------+---------------------+---------------------+----------------------+----------------------+-----------+
+| obcluster       | zone1     | ACTIVE     | 10.10.10.1:13201   | ACTIVE       |               0 | 0                    |              0 | 0                   |                   0 |                  0 | 0                   |                   0 | 0                    |                    0 |         2 |
++-----------------+-----------+------------+--------------------+--------------+-----------------+----------------------+----------------+---------------------+---------------------+--------------------+---------------------+---------------------+----------------------+----------------------+-----------+
+```
+
+### 查看 ODP 内部统计项
+
+查看 ODP 中名字中包含 global 的统计项：
+
+```shell
+show proxystat refresh like '%global%';
+```
+
+输出如下，其中 `global_client_connections_currently_open_stat` 代表客户端到 ODP 的当前连接数；
+<!-- 原文里给的是 global_client_connections_currently_open，但是输出中只有 net__global_client_connections_currently_open_stat，这里指的是这个么 
+这里的 app 指客户端不-->
+`global_connections_currently_open` 代表客户端到 ODP 的连接数与 ODP 到 OceanBase 数据库的连接数之和。
+
+```shell
++----------------------------------------------------+-------------+--------------+
+| stat_name                                          | value       | persist_type |
++----------------------------------------------------+-------------+--------------+
+| net__global_accepts_currently_open                 |           2 | PERSISTENT   |
+| net__global_connections_currently_open             |           5 | PERSISTENT   |
+| net__global_client_connections_currently_open_stat |           1 | PERSISTENT   |
++----------------------------------------------------+-------------+--------------+
+```
+
+### 查看尝试路径的状态
+
+```shell
+show proxytrace;
+```
+
+输出如下：
+
+```shell
++----------+-------------+--------------+-------+------------------+--------------------------+--------------+--------------+
+| attempts | pl_attempts | ip           | port  | server_state     | send_action              | resp_error   | cost_time_us |
++----------+-------------+--------------+-------+------------------+--------------------------+--------------+--------------+
+|        1 |           1 | 10.10.10.1   | 13201 | CONNECTION_ALIVE | SERVER_SEND_HANDSHAKE    | MIN_RESP_ERR |          848 |
+|        1 |           1 | 10.10.10.1   | 13201 | CONNECTION_ALIVE | SERVER_SEND_SAVED_LOGIN  | MIN_RESP_ERR |         2828 |
+|        1 |           1 | 10.10.10.1   | 13201 | CONNECTION_ALIVE | SERVER_SEND_USE_DATABASE | MIN_RESP_ERR |         1227 |
+|        1 |           1 | 10.10.10.1   | 13201 | CONNECTION_ALIVE | SERVER_SEND_SESSION_VARS | MIN_RESP_ERR |          775 |
+|        1 |           1 | 10.10.10.1   | 13201 | CONNECTION_ALIVE | SERVER_SEND_START_TRANS  | MIN_RESP_ERR |          913 |
+|        1 |           1 | 10.10.10.1   | 13201 | CONNECTION_ALIVE | SERVER_SEND_REQUEST      | MIN_RESP_ERR |          215 |
++----------+-------------+--------------+-------+------------------+--------------------------+--------------+--------------+
+```
+
+### 查看 ODP 内部 vip2tenant 映射关系
+
+* 查看所有映射关系
+  
+  ```shell
+  show proxyvip;
+  ```
+
+  输出如下：
+
+  ```shell
+  +------+-------------+-------+-------------+--------------+------+
+  | vid  | vip         | vport | tenant_name | cluster_name | info |
+  +------+-------------+-------+-------------+--------------+------+
+  |    6 | 10.10.10.5  |  1230 | test        | obproxy      |      |
+  |    5 | 10.10.10.3  |  1239 | test        | obproxy      |      |
+  |    4 | 10.10.10.3  |  1238 | test        | obproxy      |      |
+  |    3 | 10.10.10.2  |  1237 | test        | obproxy      |      |
+  |    2 | 10.10.10.2  |  1236 | test        | obproxy      |      |
+  |    1 | 10.10.10.1  |  1235 | test        | obproxy      |      |
+  |    0 | 10.10.10.1  |  1234 | test        | obproxy      |      |
+  +------+-------------+-------+-------------+--------------+------+
+  ```
+
+* 查看指定的映射关系
+  
+  ```shell
+  show proxyvip 0 10.10.10.1:1234;
+  ```
+
+  输出如下：
+
+  ```shell
+  +------+-------------+-------+-------------+--------------+------+
+  | vid  | vip         | vport | tenant_name | cluster_name | info |
+  +------+-------------+-------+-------------+--------------+------+
+  |    0 | 10.10.10.1  |  1234 | test        | obproxy      |      |
+  +------+-------------+-------+-------------+--------------+------+
+  ```
+
+### 查询告警日志
+
+* 查询时间不小于 2016-09-13 11:20:52.251 的告警日志
+   <!-- 如果配置了 time,那 log_id/thread_id 都需要配置，如果没有要配置为 -1 么 -->
+  ```shell
+  show warnlog -1, -1, "2016-09-13 11:20:52.251";
+  ```
+
+* 查询 36592 线程，日志 ID 不小于 1000，时间不小于 2016-09-13 11:20:52.251 的告警日志
+   <!-- 给一个最新的输出示例 -->
+  ```shell
+  show warnlog 1000, 36592, "2016-09-13 11:20:52.251";
+  ```

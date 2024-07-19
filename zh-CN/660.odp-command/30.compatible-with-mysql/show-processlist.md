@@ -1,0 +1,74 @@
+# SHOW PROCESSLIST
+
+## 描述
+
+该语句用于展示当前租户进程列表。
+
+<main id="notice" type='explain'>
+  <h4>说明</h4>
+  <ul>
+  <li>
+  <p>只有 ODP 的超级管理员（root@proxysys）可以通过该命令查看所有集群租户的会话信息，并通过 <code>KILL</code> 命令终止任意一个集群租户的会话。</p>
+  </li>
+  <li>
+  <p>OceanBase 数据库 sys 租户下的用户可以通过该命令查看当前集群所有租户的会话信息，但只能通过 <code>KILL</code> 命令终止本租户内任意一个会话。</p>
+  </li>
+  <li>
+  <p>其他普通用户只能根据自身权限对相同租户用户下的会话进行操作，默认普通用户只能通过该命令查看当前用户下的会话信息，且无法看到其所在集群信息。</p>
+  </li>
+  </ul>
+</main>
+
+## 语法
+
+```sql
+SHOW [FULL] PROCESSLIST
+```
+
+## 参数解释
+
+|  参数  | 描述  |
+|-------|--------|
+| PROCESSLIST | 显示简要的进程列表，具体如下：<ul><li><code>ID</code>：进程的 ID，即当前会话的 Client Session ID，该 ID 是会话在客户端中的唯一标识。</li><li><code>USER</code>：该会话所属的用户名。</li><li><code>HOST</code>：发起该会话的客户端 IP 和端口（通过 ODP 连接则为 ODP 的 IP 和端口）。</li><li><code>DB</code>：访问的 Database 名称。</li><li><code>COMMAND</code>：当前执行的命令类型，取值 <code>Query</code>、<code>Sleep</code> 等。</li><li><code>TIME</code>：当前命令执行时间，单位是秒。如果命令发生重试，会清零后重新计算。</li><li><code>STATE</code>：当前会话状态，取值 <code>SLEEP</code>、<code>ACTIVE</code> 等。</li><li><code>INFO</code>：展示当前正在执行的命令，长度限制为 100 个字符，超出部分截断。</li></ul> |
+| FULL PROCESSLIST | 显示完整的进程列表，包括每个进程的详细信息，具体如下：  <ul><li><code>ID</code>：进程的 ID，即当前会话的 Client Session ID，该 ID 是会话在客户端中的唯一标识。</li><li><code>USER</code>：该会话所属的用户名。</li><li><code>TENANT</code>：该会话所访问的租户名称。</li><li><code>HOST</code>：发起该会话的客户端 IP 和端口（通过 ODP 连接则为 ODP 的 IP 和端口）。</li><li><code>DB</code>：访问的 Database 名称。</li><li><code>COMMAND</code>：当前执行的命令类型，取值 <code>Query</code>、<code>Sleep</code> 等。</li><li><code>TIME</code>：当前命令执行时间，单位是秒。如果命令发生重试，会清零后重新计算。</li><li><code>STATE</code>：当前会话状态，取值 <code>SLEEP</code>、<code>ACTIVE</code> 等。</li><li><code>INFO</code>：展示当前正在执行的命令。</li><li><code>IP</code>：该会话所属的服务器 IP 地址，即 OBServer 节点的 IP 地址。</li><li><code>PORT</code>：该会话所属服务器的 SQL 端口号，即 OBServer 节点的 SQL 端口号。</li></ul> |
+
+## 示例
+
+<main id="notice" type='explain'>
+  <h4>说明</h4>
+  <p>该命令的具体使用可参见 <a href='../../500.connection-management/400.server-session.md'>服务端连接</a>。</p>
+</main>
+<!-- 验证 cs_id 一致功能，补充相关描述 -->
+* 使用 `SHOW PROCESSLIST` 语句查看租户会话
+  
+  ```shell
+  obclient [SYS]> SHOW PROCESSLIST;
+  ```
+
+  输出如下：
+
+  ```shell
+  +------------+------+----------------------+------+---------+------+--------+------------------+
+  | ID         | USER | HOST                 | DB   | COMMAND | TIME | STATE  | INFO             |
+  +------------+------+----------------------+------+---------+------+--------+------------------+
+  | 3221488068 | SYS  | 100.xx.xxx.xxx:18985 | SYS  | Sleep   |  298 | SLEEP  | NULL             |
+  | 3221488078 | SYS  | 100.xx.xxx.xxx:32489 | SYS  | Query   |    0 | ACTIVE | SHOW PROCESSLIST |
+  +------------+------+----------------------+------+---------+------+--------+------------------+
+  ```
+
+* 使用 `SHOW FULL PROCESSLIST` 语句查看租户会话
+  
+  ```shell
+  obclient [SYS]> SHOW FULL PROCESSLIST;
+  ```
+
+  输出如下：
+
+  ```shell
+  +------------+------+-----------+----------------------+------+---------+------+--------+-----------------------+----------------+------+
+  | ID         | USER | TENANT    | HOST                 | DB   | COMMAND | TIME | STATE  | INFO                  | IP             | PORT |
+  +------------+------+-----------+----------------------+------+---------+------+--------+-----------------------+----------------+------+
+  | 3221488068 | SYS  | oracle001 | 100.xx.xxx.xxx:18985 | SYS  | Sleep   |  548 | SLEEP  | NULL                  | 172.xx.xxx.xxx | 2881 |
+  | 3221488078 | SYS  | oracle001 | 100.xx.xxx.xxx:32489 | SYS  | Query   |    0 | ACTIVE | SHOW FULL PROCESSLIST | 172.xx.xxx.xxx | 2881 |
+  +------------+------+-----------+----------------------+------+---------+------+--------+-----------------------+----------------+------+
+  ```
