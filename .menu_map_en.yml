@@ -5,9 +5,10 @@
 500.connection-management=Connection management
 600.data-routing=Data routing
   400.intra-tenant-routing=Intra-tenant routing
+  700.expression-routing=Function partition key routing
+650.log=Logs
 700.high-availability=High availability mechanism
 900.o-m-guide=Operation and maintenance
-  100.troubleshooting=Troubleshooting
   400.routing-diagnosis=Routing diagnostics
     300.diagnosis-point-troubleshooting=Diagnostic point troubleshooting
 1000.release-notes=Release Notes
