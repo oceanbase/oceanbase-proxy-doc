@@ -1,0 +1,23 @@
+# SHOW RELAYLOG EVENTS
+
+<main id="notice" type='explain'>
+  <h4>说明</h4>
+  <p>仅支持该关键字语法，功能暂不生效，执行将返回空结果集。</p>
+</main>
+
+## 描述
+
+该语句用于查看某个副本 relay log 中的事件信息。如果不指定 `log_name`，将默认查询第一条 relay log 信息。
+
+## 语法
+
+```sql
+SHOW RELAYLOG EVENTS
+    [IN 'log_name']
+    [FROM pos]
+    [LIMIT [offset,] row_count]
+    [channel_option]
+
+channel_option:
+    FOR CHANNEL channel
+```
