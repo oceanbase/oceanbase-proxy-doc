@@ -11,6 +11,7 @@
   20.odp-proprietary-commands=内部命令
   30.compatible-with-mysql=MySQL 兼容命令
 700.high-availability=高可用机制
+750.obkv=OBKV
 900.o-m-guide=运维
   400.routing-diagnosis=路由诊断
     300.diagnosis-point-troubleshooting=诊断点排查
