@@ -9,6 +9,7 @@
 650.log=日志
 660.odp-command=命令
   20.odp-proprietary-commands=内部命令
+    400.show=SHOW
   30.compatible-with-mysql=MySQL 兼容命令
 700.high-availability=高可用机制
 750.obkv=OBKV
