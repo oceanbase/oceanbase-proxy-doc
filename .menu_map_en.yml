@@ -9,6 +9,7 @@
 650.log=Logs
 660.odp-command=Commands
   20.odp-proprietary-commands=Dedicated ODP commands
+    200.kill=KILL
     400.show=SHOW
   30.compatible-with-mysql=Compatible MySQL commands
 700.high-availability=High availability mechanism
